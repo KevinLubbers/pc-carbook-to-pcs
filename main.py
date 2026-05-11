@@ -9,38 +9,69 @@ load_dotenv()
 
 DB_URL = os.getenv("DB_URL")
 
+# 3 digit codes for all PCS Divisions
+divisions = [
+    "ADG", "AJP", "ADO", "ASD", "AUD", "AVW", "CHR", "DGT", "DOD", "JEP",
+    "PLY", "FEI", "FOR", "FTK", "LNC", "MER", "BUI", "CAD", "CHE", "CHT",
+    "GMC", "HAX", "HD", "HNP", "HYA", "HYU", "IPX", "LEX", "MBA", "MBO",
+    "NAX", "NPX", "PSS", "PXC", "PXP", "SUA", "SUB", "SVW", "TOY", "TYP",
+    "USC", "USP"
+]
+
 
 # Connect to the database
 conn = sqlite3.connect(DB_URL)
 c = conn.cursor()
 
-#create table if it doesn't exist
-c.execute("""
-        CREATE TABLE IF NOT EXISTS model_options(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            model_year INTEGER NOT NULL,
-            division TEXT NOT NULL,
-            model TEXT NOT NULL,
-            model_code TEXT NOT NULL,
-            option_code TEXT NOT NULL,
-            option_name TEXT DEFAULT NULL,
-            option_category TEXT DEFAULT NULL,
-            invoice_price REAL NOT NULL,
-            msrp_price REAL NOT NULL,
-            scrape_date TEXT DEFAULT (datetime('now', 'localtime'))
-        )""")
-
-#SQL query used later to insert using executemany()
-sql = """INSERT INTO model_options (model_year, division, model, model_code, option_code, option_name, option_category, invoice_price, msrp_price)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-#end helper functions
 
 #main loop
 def run():
-    #insert data into database
-    c.executemany(sql, data)
 
-    conn.commit()
+    #get available models
+    c.execute("SELECT DISTINCT model FROM model_options ORDER BY model")
+    models = [row[0] for row in c.fetchall()]
+    print("Available Models:")
+    print("-" * 30)
+    for idx, model in enumerate(models, start=1):
+        print(f"{idx}. {model}")
+
+    #user selects model
+    selected_model = None
+    while selected_model is None:
+        try:
+            choice = int(input(f"Select a model (1-{len(models)}): "))
+            if 1 <= choice <= len(models):
+                selected_model = models[choice - 1]
+            else:
+                print("Invalid number. Try again.")
+        except ValueError:
+            print("Please enter a number.")
+
+    print(f"You selected: {selected_model}")
+    time.sleep(5)
+    print("Available Divisions:")
+    print("-" * 30)
+    for idx, div in enumerate(divisions, start=1):
+        print(f"{idx}. {div}")
+
+    #user selects Division (used in PCS later)
+    selected_division = None
+    while selected_division is None:
+        try:
+            choice = int(input(f"Select a division (1-{len(divisions)}): "))
+            if 1 <= choice <= len(divisions):
+                selected_division = divisions[choice - 1]
+            else:
+                print("Invalid number. Try again.")
+        except ValueError:
+            print("Please enter a number.")
+
+    print(f"You selected division: {selected_division}")
+    time.sleep(5)
+    c.execute("SELECT model_year, model_code, option_code, option_name, option_category, invoice_price, msrp_price FROM model_options WHERE model = ?", (selected_model,))
+    rows = c.fetchall()
+    for row in rows:
+        print(row)
     conn.close()
 
 
