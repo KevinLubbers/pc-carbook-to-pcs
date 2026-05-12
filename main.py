@@ -75,6 +75,7 @@ def run():
     time.sleep(2)
     for row in rows:
         pcslib.select_option(row[2])
+        pcslib.option_back_reset()
     pcslib.back()
     pcslib.back_reset()
     conn.close()
