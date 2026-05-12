@@ -74,7 +74,7 @@ def run():
     pcslib.select_model(rows[0][1], str(rows[0][0]))
     time.sleep(2)
     for row in rows:
-        pcslib.select_option(row[2])
+        pcslib.select_option(row[2], row[3], row[4], row[5], row[6])
         pcslib.option_back_reset()
     pcslib.back()
     pcslib.back_reset()
