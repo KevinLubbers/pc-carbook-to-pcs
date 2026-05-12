@@ -73,8 +73,9 @@ def run():
     pcslib.focus_pcs()
     pcslib.select_model(rows[0][1], str(rows[0][0]))
     time.sleep(2)
-    print("Inside Options")
-    time.sleep(1)
+    for row in rows:
+        pcslib.select_option(row[2])
+    pcslib.back()
     pcslib.back_reset()
     conn.close()
 
