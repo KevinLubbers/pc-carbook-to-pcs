@@ -70,8 +70,10 @@ def run():
     time.sleep(5)
     c.execute("SELECT model_year, model_code, option_code, option_name, option_category, invoice_price, msrp_price FROM model_options WHERE model = ?", (selected_model,))
     rows = c.fetchall()
+    pcslib.focus_pcs()
     for row in rows:
-        print(row)
+        pcslib.select_model(row[1], str(row[0]))
+        time.sleep(2)
     conn.close()
 
 
