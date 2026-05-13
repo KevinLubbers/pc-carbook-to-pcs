@@ -68,15 +68,24 @@ def run():
 
     print(f"You selected division: {selected_division}")
     time.sleep(2)
+    #get options for selected model
     c.execute("SELECT model_year, model_code, option_code, option_name, option_category, invoice_price, msrp_price FROM model_options WHERE model = ?", (selected_model,))
     rows = c.fetchall()
+
+    #get all paints for selected model
     c.execute("SELECT option_code FROM model_options WHERE model = ? AND option_category = ?", (selected_model, "EXT"))
-    paints = c.fetchall()
+    paints = [row[0] for row in c.fetchall()]
+
+    #get all interiors for selected model
     c.execute("SELECT option_code FROM model_options WHERE model = ? AND option_category = ?", (selected_model, "INT"))
-    interiors = c.fetchall()
+    interiors = [row[0] for row in c.fetchall()]
+    time.sleep(2)
+
+    #start interacting with PCS Tables
     pcslib.focus_pcs()
     pcslib.select_model(rows[0][1], str(rows[0][0]))
     time.sleep(2)
+    #loop through all options
     for row in rows:
         pcslib.select_option(row[2], row[3], row[4], row[5], row[6])
         pcslib.option_back_reset()
