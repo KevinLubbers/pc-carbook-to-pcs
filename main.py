@@ -68,7 +68,7 @@ def run():
 
     print(f"You selected division: {selected_division}")
     time.sleep(2)
-    c.execute("SELECT model_year, model_code, option_code, option_name, option_category, invoice_price, msrp_price FROM model_options WHERE model = ?", (selected_model))
+    c.execute("SELECT model_year, model_code, option_code, option_name, option_category, invoice_price, msrp_price FROM model_options WHERE model = ?", (selected_model,))
     rows = c.fetchall()
     c.execute("SELECT option_code FROM model_options WHERE model = ? AND option_category = ?", (selected_model, "EXT"))
     paints = c.fetchall()
