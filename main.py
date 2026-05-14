@@ -23,17 +23,43 @@ divisions = [
 conn = sqlite3.connect(DB_URL)
 c = conn.cursor()
 
+# Create the "Completed Models" db table if it doesn't exist
+c.execute("""
+    CREATE TABLE IF NOT EXISTS completed_models (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        model TEXT NOT NULL,
+        completed BOOLEAN DEFAULT 0,
+        completed_date TEXT DEFAULT NULL 
+    )""")
+
+update_query = "UPDATE completed_models SET completed = 1, completed_date = datetime('now', 'localtime') WHERE model = ?" 
+insert_query = "INSERT INTO completed_models (model) VALUES (?)"
 
 #main loop
 def run():
 
     #get available models
-    c.execute("SELECT DISTINCT model FROM model_options ORDER BY model")
-    models = [row[0] for row in c.fetchall()]
+    c.execute("SELECT model, completed FROM completed_models")
+    models = c.fetchall()
+    '''
+    #uncomment to load models into completed_models table
+    completed_models_load = []
+    for model in models:
+        insert_tuple = (model,)
+        completed_models_load.append(insert_tuple)
+
+    c.executemany(insert_query, completed_models_load)
+    conn.commit()
+    '''
+
     print("Available Models:")
     print("-" * 30)
-    for idx, model in enumerate(models, start=1):
-        print(f"{idx}. {model}")
+    for idx, (model_name, completed) in enumerate(models, start=1):
+        if completed:
+            completed_string = "\033[32mCompleted\033[0m"
+        else:
+            completed_string = "\033[31mNot Completed\033[0m"
+        print(f"{idx}. {model_name} ----- {completed_string}")
 
     #user selects model
     selected_model = None
@@ -83,16 +109,19 @@ def run():
 
     #start interacting with PCS Tables
     pcslib.focus_pcs()
+    #order of select_model(model_year, model_code)
     pcslib.select_model(rows[0][1], str(rows[0][0]))
     time.sleep(2)
     #loop through all options
     for row in rows:
+        #order of select_option(option, name, category, invoice, msrp)
         pcslib.select_option(row[2], row[3], row[4], row[5], row[6])
         pcslib.option_back_reset()
     pcslib.add_paints(paints)
     pcslib.add_interiors(interiors)
     pcslib.back()
     pcslib.back_reset()
+    c.execute(update_query, (selected_model,))
     conn.close()
 
 
