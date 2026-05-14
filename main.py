@@ -125,6 +125,7 @@ def run():
     #reverse tab back to model search box
     pcslib.back_reset()
     c.execute(update_query, (selected_model,))
+    conn.commit()
     conn.close()
 
 
