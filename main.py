@@ -67,7 +67,7 @@ def run():
         try:
             choice = int(input(f"Select a model (1-{len(models)}): "))
             if 1 <= choice <= len(models):
-                selected_model = models[choice - 1]
+                selected_model = models[choice - 1][0]
             else:
                 print("Invalid number. Try again.")
         except ValueError:
@@ -117,9 +117,12 @@ def run():
         #order of select_option(option, name, category, invoice, msrp)
         pcslib.select_option(row[2], row[3], row[4], row[5], row[6])
         pcslib.option_back_reset()
+    #add all paints and interiors to EXT1 and INT1 (currently)
     pcslib.add_paints(paints)
     pcslib.add_interiors(interiors)
+    #back out of options screen
     pcslib.back()
+    #reverse tab back to model search box
     pcslib.back_reset()
     c.execute(update_query, (selected_model,))
     conn.close()
